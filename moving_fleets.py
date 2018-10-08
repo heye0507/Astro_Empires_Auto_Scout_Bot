@@ -6,6 +6,7 @@ import time
 import re
 import random
 import math
+import os
 from bs4 import BeautifulSoup
 
 
@@ -38,13 +39,13 @@ target_params = {
 
 
 def connect(url):
-	print ('----------连接服务器,请稍后---------')
+	write_to_file('----------连接服务器,请稍后---------')
 	session = requests.Session()
 	try:
-		response = session.get(url,headers=headers,timeout=10)
+		response = session.get(url,headers=headers,timeout=4)
 	except requests.RequestException as e:
-		print ('debug:程序错误,原因:'+e)
-		exit(0)
+		print('程序错误,清理未完成文件')
+		print('debug: ',e)
 	#print (response.status_code)
 	#print (response.cookies.get_dict())
 	#print (response.text)
@@ -53,23 +54,23 @@ def connect(url):
 
 def login(session,url,data):
 	try:
-		response = session.post(url,data=data,headers=headers,timeout=10)
+		response = session.post(url,data=data,headers=headers,timeout=4)
 	except requests.RequestException as e:
-		print ('debug:程序错误,原因:'+e)
-		exit(0)	
+		print('程序错误,清理未完成文件')
+		print('debug: ',e)
 	#print (response.status_code)
 	#print (response.cookies)
 	#print (response.text)
-	print ('------登陆成功,2秒后自动搜索T20-29偷鸡----\n')
+	write_to_file('------登陆成功,2秒后自动搜索T20-29偷鸡----\n')
 	time.sleep(2)
 	return session
 
 def getTarget(session,url,data):
 	try:
-		response = session.post(url,data=data,headers=headers,timeout=10)
+		response = session.post(url,data=data,headers=headers,timeout=4)
 	except requests.RequestException as e:
-		print ('debug:程序错误,原因:'+e)
-		exit(0)
+		print('程序错误,清理未完成文件')
+		print('debug: ',e)
 	#print (response.status_code)
 	#print (response.cookies)
 	soup = BeautifulSoup(response.content,'html.parser')
@@ -99,14 +100,20 @@ def not_report_data(enemy_list,fleet_size):
 		return True
 	return False
 
+def write_to_file(enemy_info):
+	with open('/Users/haohe/Desktop/moving_fleets_report.txt','a+') as f:
+		for item in enemy_info:
+			f.write(item+' ')#add a /n when counter counts to 0
+		f.write('\n')
+
 def report_enemy(soup):
 	friendly_guild_counter = 0
 	enemy_info = []
 	for tag in soup.find_all('td'):
 		if (no_fleets(tag)):
-			print(tag.string)
+			write_to_file(tag.string)
 		else:
-			if (friendly_guild_counter is not 0):
+			if (friendly_guild_counter is not 0):#skip friendly guild fields (5 attries)
 				friendly_guild_counter = friendly_guild_counter - 1
 				continue
 			else: #check if it is friendly guild
@@ -118,19 +125,19 @@ def report_enemy(soup):
 						if (not_report_data(enemy_info,fleet_size_limit)):
 							enemy_info.clear()
 						else:
-							print(enemy_info)
+							write_to_file(enemy_info)
 							enemy_info.clear()
 					if (not has_td_but_no_keys(tag)):
 						enemy_info.append(re.sub(r'\s','',tag.a.string))
 					else:
 						enemy_info.append(tag['sorttable_customkey'])
 	if (len(enemy_info) is 0):
-		print('---------安全--------------')
+		write_to_file('---------安全--------------')
 	elif (not_report_data(enemy_info,fleet_size_limit)):
-		print('---------安全--------------')
+		write_to_file('---------安全--------------')
 		enemy_info.clear()					
 	else:
-		print(enemy_info)
+		write_to_file(enemy_info)
 		enemy_info.clear()
 
 
@@ -139,6 +146,7 @@ def report_enemy(soup):
 
 
 def main():
+	print('开始扫描,请等待')
 	time_start = time.time()
 	session = connect(url_base+url_set_language)
 	session = login(session,url_base+url_login,params)
@@ -146,14 +154,37 @@ def main():
 	while (galaxy_num<30):
 		target_params['galaxy'] = str(galaxy_num)
 		print('-----正在寻找星系T'+target_params['galaxy']+'-------------')
+		write_to_file('-----正在寻找星系T'+target_params['galaxy']+'-------------')
 		session = getTarget(session,url_base+url_target,target_params)
 		galaxy_num = galaxy_num + 1
-		wait = random.randint(1,3)
-		print ('----等待'+str(wait)+'秒后查找下一星系--------\n')
+		wait = random.randint(1,2)
+		print('----等待'+str(wait)+'秒后查找下一星系--------\n')
+		write_to_file('----等待'+str(wait)+'秒后查找下一星系--------\n')
 		time.sleep(wait)
 	session.close()
-	print('------------关闭连接:完成--------')
-	print('总耗时: '+str(math.floor(time.time()-time_start))+'秒\n')
+	write_to_file('------------关闭连接:完成--------')
+	write_to_file('总耗时: '+str(math.floor(time.time()-time_start))+'秒\n')
 
 if __name__ == '__main__':
-	main()
+	timeout = 5
+	while True:
+		try:
+			if(timeout is 0):
+				break
+			if (os.path.isfile('/Users/haohe/Desktop/moving_fleets_report.txt')):
+				print ('清理前序文件')
+				os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
+			main()
+		except KeyboardInterrupt:
+			print('clearning files...')
+			os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
+		except:
+			os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
+			timeout = timeout - 1
+			pass
+
+
+
+
+
+	
