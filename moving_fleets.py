@@ -8,6 +8,7 @@ import random
 import math
 import os
 from bs4 import BeautifulSoup
+from qqbot import qqbotsched
 
 
 url_base = 'http://typhon.astroempires.com/'
@@ -44,8 +45,9 @@ def connect(url):
 	try:
 		response = session.get(url,headers=headers,timeout=4)
 	except requests.RequestException as e:
-		print('程序错误,清理未完成文件')
+		print('connect:程序错误,清理未完成文件')
 		print('debug: ',e)
+		exit(0)
 	#print (response.status_code)
 	#print (response.cookies.get_dict())
 	#print (response.text)
@@ -56,8 +58,9 @@ def login(session,url,data):
 	try:
 		response = session.post(url,data=data,headers=headers,timeout=4)
 	except requests.RequestException as e:
-		print('程序错误,清理未完成文件')
+		print('login:程序错误,清理未完成文件')
 		print('debug: ',e)
+		exit(0)
 	#print (response.status_code)
 	#print (response.cookies)
 	#print (response.text)
@@ -69,8 +72,9 @@ def getTarget(session,url,data):
 	try:
 		response = session.post(url,data=data,headers=headers,timeout=4)
 	except requests.RequestException as e:
-		print('程序错误,清理未完成文件')
+		print('getTarget:程序错误,清理未完成文件')
 		print('debug: ',e)
+		exit(0)
 	#print (response.status_code)
 	#print (response.cookies)
 	soup = BeautifulSoup(response.content,'html.parser')
@@ -143,6 +147,14 @@ def report_enemy(soup):
 
 #-----------------added--------------
 
+@qqbotsched(hour='0-23',minute='0-57/3')
+def mytask(bot):
+	main()
+
+def prepareData():
+	with open('/Users/haohe/Desktop/moving_fleets_report.txt','r') as f:
+		result = f.read()
+	return result
 
 
 def main():
@@ -175,12 +187,23 @@ if __name__ == '__main__':
 				print ('清理前序文件')
 				os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
 			main()
+			#report = prepareData()
+			#bot.SendTo(contact,report)
+			break
 		except KeyboardInterrupt:
 			print('clearning files...')
 			os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
+			break
 		except:
 			os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
 			timeout = timeout - 1
+			if (timeout is not 0):
+				print("不负责任猜测发生错误的原因是超时,10秒后重启下一轮链接")
+				print("还剩%d次尝试" %timeout)
+				time.sleep(5)
+			else:
+				print("尝试次数为0,程序终止")
+				break
 			pass
 
 
