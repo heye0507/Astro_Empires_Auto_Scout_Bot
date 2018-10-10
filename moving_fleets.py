@@ -8,7 +8,7 @@ import random
 import math
 import os
 from bs4 import BeautifulSoup
-from qqbot import qqbotsched
+
 
 
 url_base = 'http://typhon.astroempires.com/'
@@ -109,8 +109,14 @@ def not_report_data(enemy_list,fleet_size):
 def write_to_file(enemy_info):
 	with open('/Users/haohe/Desktop/moving_fleets_report.txt','a+') as f:
 		for item in enemy_info:
-			f.write(item+' ')#add a /n when counter counts to 0
+			f.write(item+' ')
 		f.write('\n')
+
+def write_log(log_data):
+	with open('/Users/haohe/Desktop/moving_fleets_report.txt','a+') as f:
+		for item in log_data:
+			f.write(item)#add a /n when counter counts to 0
+
 
 def report_enemy(soup):
 	friendly_guild_counter = 0
@@ -131,17 +137,17 @@ def report_enemy(soup):
 					if (len(enemy_info) is 5):
 						if (not_report_data(enemy_info,fleet_size_limit)):
 							enemy_info.clear()
-						else:
+						else: #found one enemy
 							write_to_file(enemy_info)
 							enemy_info.clear()
-					if (not has_td_but_no_keys(tag)):
+					if (not has_td_but_no_keys(tag)): #timer for arrival, not handled yet
 						enemy_info.append(re.sub(r'\s','',tag.a.string))
 					else:
 						enemy_info.append(tag['sorttable_customkey'])
 	if (len(enemy_info) is 0):
-		write_to_file('---------安全--------------')
+		print('---------安全--------------')
 	elif (not_report_data(enemy_info,fleet_size_limit)):
-		write_to_file('---------安全--------------')
+		print('---------安全--------------')
 		enemy_info.clear()					
 	else:
 		write_to_file(enemy_info)
@@ -161,7 +167,7 @@ def main():
 	while (galaxy_num<30):
 		target_params['galaxy'] = str(galaxy_num)
 		print('-----正在寻找星系T'+target_params['galaxy']+'-------------')
-		write_to_file('-----正在寻找星系T'+target_params['galaxy']+'-------------')
+		#write_to_file('-----正在寻找星系T'+target_params['galaxy']+'-------------')
 		session = getTarget(session,url_base+url_target,target_params)
 		galaxy_num = galaxy_num + 1
 		wait = random.randint(1,2)
@@ -173,36 +179,49 @@ def main():
 			print('扫描完成')
 	session.close()
 	print('------------关闭连接:完成--------')
-	write_to_file('总耗时: '+str(math.floor(time.time()-time_start))+'秒\n')
-	write_to_file('done')
+	write_log('总耗时: '+str(math.floor(time.time()-time_start))+'秒\n')
+	write_log('当前偷鸡被发现的最小规模为: '+str(fleet_size_limit)+'\n')
 
 if __name__ == '__main__':
 	timeout = 5
 	while True:
 		try:
 			if(timeout is 0):
+				print('critical issue: please contact author...')
 				break
 			if (os.path.isfile('/Users/haohe/Desktop/moving_fleets_report.txt')):
-				print ('清理前序文件')
+				print ('清理上次记录文件')
 				os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
 			main()
+			next_search_time = time.asctime(time.localtime(time.time()+300))
 			print ('下次搜索将在5分钟后进行,尝试次数设为5')
+			write_log('下次搜索时间为: '+next_search_time+'\n')
+			write_log('done\n')
 			timeout = 5
 			time.sleep(searching_period)
 		except KeyboardInterrupt:
 			print('clearning files...')
 			#os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
 			break
+		except TypeError as e:
+			print ('check type error')
+			print (e)
+			break
 		except:
-			os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
 			timeout = timeout - 1
 			if (timeout is not 0):
 				print("不负责任猜测发生错误的原因是超时,10秒后重启下一轮链接")
 				print("还剩%d次尝试" %timeout)
 				time.sleep(5)
 			else:
-				print("尝试次数为0,程序终止")
-				break
+				write_log("已尝试连接AE服务器5次，全部失败...\n")
+				print ('尝试次数5次, 将在下一轮重启连接')
+				print ('下次搜索将在5分钟后进行,尝试次数设为5')
+				next_search_time = time.asctime(time.localtime(time.time()+300))
+				write_log('下次搜索时间为: '+next_search_time+'\n')
+				write_log('done\n')
+				timeout = 5
+				time.sleep(searching_period)
 			pass
 
 

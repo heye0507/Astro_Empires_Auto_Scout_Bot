@@ -5,27 +5,41 @@ import sys
 sys.path.append(r'/Users/haohe/Python/spider/aeGame/')
 import os
 import time
+import re
+from qqbot import qqbotsched
 
 #2378314127
+
 
 def prepareData():
 	with open('/Users/haohe/Desktop/moving_fleets_report.txt','r') as f:
 		result = f.readlines()
-		if(result[-1] == 'd o n e \n'):
-			return '\n'.join(result)
+		if(result[-1] == 'done\n'):
+			return ''.join(result)
 		else:
 			result = 'result is not ready, please wait...'
 	return result
 
+@qqbotsched(hour='0-23',minute='0-54/6')
+def autoReport(bot):
+	group = bot.List('group','Astro Empire T服群')[0]
+	if (group is None):
+		return
+	if (not os.path.isfile('/Users/haohe/Desktop/moving_fleets_report.txt')):
+		pass
+	else:
+		report = prepareData()
+		if (report[0][0]!='[' ):
+			print('nothing to report...')
+			pass
+		else:
+			bot.SendTo(group,'自动汇报程序启动:\n'+report)
 
 def onQQMessage(bot,contact,member,content):
 	if bot.isMe(contact,member):
 		print('自言自语...')
 	else:
-		if (member.name == 'dreamdragon T23' and content == '-闭嘴吧'):
-			bot.SendTo(contact,'(中二)主人在叫我，程序终止...')
-			bot.Stop()
-		elif content == '-报告':
+		if content == '-报告':
 			if (not os.path.isfile('/Users/haohe/Desktop/moving_fleets_report.txt')):
 					bot.SendTo(contact,'偷鸡报告未生成, 请等待...')
 			else:
