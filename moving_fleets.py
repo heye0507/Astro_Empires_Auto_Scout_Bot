@@ -16,6 +16,8 @@ url_set_language = '?lang=en'
 url_login = 'login.aspx'
 url_target = 'report.aspx?view=galaxy'
 fleet_size_limit = 1000
+searching_period = 300 #search ninja every 3 mins
+AE_timeout = 10 #AE server is bad... (to wait more time for server responses)
 
 headers = {
 	"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
@@ -40,10 +42,10 @@ target_params = {
 
 
 def connect(url):
-	write_to_file('----------连接服务器,请稍后---------')
+	print('----------连接服务器,请稍后---------')
 	session = requests.Session()
 	try:
-		response = session.get(url,headers=headers,timeout=4)
+		response = session.get(url,headers=headers,timeout=AE_timeout)
 	except requests.RequestException as e:
 		print('connect:程序错误,清理未完成文件')
 		print('debug: ',e)
@@ -56,7 +58,7 @@ def connect(url):
 
 def login(session,url,data):
 	try:
-		response = session.post(url,data=data,headers=headers,timeout=4)
+		response = session.post(url,data=data,headers=headers,timeout=AE_timeout)
 	except requests.RequestException as e:
 		print('login:程序错误,清理未完成文件')
 		print('debug: ',e)
@@ -64,13 +66,13 @@ def login(session,url,data):
 	#print (response.status_code)
 	#print (response.cookies)
 	#print (response.text)
-	write_to_file('------登陆成功,2秒后自动搜索T20-29偷鸡----\n')
+	print('------登陆成功,2秒后自动搜索T20-29偷鸡----\n')
 	time.sleep(2)
 	return session
 
 def getTarget(session,url,data):
 	try:
-		response = session.post(url,data=data,headers=headers,timeout=4)
+		response = session.post(url,data=data,headers=headers,timeout=AE_timeout)
 	except requests.RequestException as e:
 		print('getTarget:程序错误,清理未完成文件')
 		print('debug: ',e)
@@ -115,7 +117,8 @@ def report_enemy(soup):
 	enemy_info = []
 	for tag in soup.find_all('td'):
 		if (no_fleets(tag)):
-			write_to_file(tag.string)
+			continue
+			#write_to_file(tag.string) #handle no fleets in your region, no need to report
 		else:
 			if (friendly_guild_counter is not 0):#skip friendly guild fields (5 attries)
 				friendly_guild_counter = friendly_guild_counter - 1
@@ -147,14 +150,6 @@ def report_enemy(soup):
 
 #-----------------added--------------
 
-@qqbotsched(hour='0-23',minute='0-57/3')
-def mytask(bot):
-	main()
-
-def prepareData():
-	with open('/Users/haohe/Desktop/moving_fleets_report.txt','r') as f:
-		result = f.read()
-	return result
 
 
 def main():
@@ -170,12 +165,16 @@ def main():
 		session = getTarget(session,url_base+url_target,target_params)
 		galaxy_num = galaxy_num + 1
 		wait = random.randint(1,2)
-		print('----等待'+str(wait)+'秒后查找下一星系--------\n')
-		write_to_file('----等待'+str(wait)+'秒后查找下一星系--------\n')
-		time.sleep(wait)
+		if (galaxy_num is not 30):
+			print('----等待'+str(wait)+'秒后查找下一星系--------\n')
+			#write_to_file('----等待'+str(wait)+'秒后查找下一星系--------\n')
+			time.sleep(wait)
+		elif (galaxy_num is 30):
+			print('扫描完成')
 	session.close()
-	write_to_file('------------关闭连接:完成--------')
+	print('------------关闭连接:完成--------')
 	write_to_file('总耗时: '+str(math.floor(time.time()-time_start))+'秒\n')
+	write_to_file('done')
 
 if __name__ == '__main__':
 	timeout = 5
@@ -187,12 +186,12 @@ if __name__ == '__main__':
 				print ('清理前序文件')
 				os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
 			main()
-			#report = prepareData()
-			#bot.SendTo(contact,report)
-			break
+			print ('下次搜索将在5分钟后进行,尝试次数设为5')
+			timeout = 5
+			time.sleep(searching_period)
 		except KeyboardInterrupt:
 			print('clearning files...')
-			os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
+			#os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
 			break
 		except:
 			os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
