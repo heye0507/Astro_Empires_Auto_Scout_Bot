@@ -18,6 +18,7 @@ url_target = 'report.aspx?view=galaxy'
 fleet_size_limit = 1000
 searching_period = 300 #search ninja every 3 mins
 AE_timeout = 10 #AE server is bad... (to wait more time for server responses)
+log_path = '/root/aeBot/moving_fleets_report.txt'
 
 headers = {
 	"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
@@ -26,7 +27,7 @@ headers = {
 }
 
 params = {
-	"email": "heye0507@gmail.com",
+	"email": "2378314127@gmail.com",
 	"pass": "12345Abc",
 	"navigator": "Netscape",
 	"hostname": "typhon.astroempires.com",
@@ -107,13 +108,13 @@ def not_report_data(enemy_list,fleet_size):
 	return False
 
 def write_to_file(enemy_info):
-	with open('/Users/haohe/Desktop/moving_fleets_report.txt','a+') as f:
+	with open(log_path,'a+') as f:
 		for item in enemy_info:
 			f.write(item+' ')
 		f.write('\n')
 
 def write_log(log_data):
-	with open('/Users/haohe/Desktop/moving_fleets_report.txt','a+') as f:
+	with open(log_path,'a+') as f:
 		for item in log_data:
 			f.write(item)#add a /n when counter counts to 0
 
@@ -189,9 +190,9 @@ if __name__ == '__main__':
 			if(timeout is 0):
 				print('critical issue: please contact author...')
 				break
-			if (os.path.isfile('/Users/haohe/Desktop/moving_fleets_report.txt')):
+			if (os.path.isfile(log_path)):
 				print ('清理上次记录文件')
-				os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
+				os.remove(log_path)
 			main()
 			next_search_time = time.asctime(time.localtime(time.time()+300))
 			print ('下次搜索将在5分钟后进行,尝试次数设为5')

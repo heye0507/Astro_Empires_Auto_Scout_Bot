@@ -9,10 +9,10 @@ import re
 from qqbot import qqbotsched
 
 #2378314127
-
+log_path = '/root/aeBot/moving_fleets_report.txt'
 
 def prepareData():
-	with open('/Users/haohe/Desktop/moving_fleets_report.txt','r') as f:
+	with open(log_path,'r') as f:
 		result = f.readlines()
 		if(result[-1] == 'done\n'):
 			return ''.join(result)
@@ -25,7 +25,7 @@ def autoReport(bot):
 	group = bot.List('group','Astro Empire T服群')[0]
 	if (group is None):
 		return
-	if (not os.path.isfile('/Users/haohe/Desktop/moving_fleets_report.txt')):
+	if (not os.path.isfile(log_path)):
 		pass
 	else:
 		report = prepareData()
@@ -40,7 +40,7 @@ def onQQMessage(bot,contact,member,content):
 		print('自言自语...')
 	else:
 		if content == '-报告':
-			if (not os.path.isfile('/Users/haohe/Desktop/moving_fleets_report.txt')):
+			if (not os.path.isfile(log_path)):
 					bot.SendTo(contact,'偷鸡报告未生成, 请等待...')
 			else:
 				report = prepareData()
