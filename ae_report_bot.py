@@ -54,10 +54,15 @@ def onQQMessage(bot,contact,member,content):
 		elif content == '--stop':
 			bot.SendTo(contact,'emergency shuting down....please check...')
 			bot.Stop()
+		elif content == '-版本':
+			outData = '当前版本为 偷鸡雷达v0.3测试版\n1. 每隔5分钟自动搜索T2x星系的偷鸡舰队\n'
+			outData = outData + '2. 可在qq群通过偷鸡机器人查看相关报告\n'
+			outData = outData + '3. 每6分钟检查一次是否有偷鸡舰队，自动触发报警\n'
+			bot.SendTo(contact,outData)
 		elif content == '-帮助':
-			bot.SendTo(contact, '目前支持的指令有: ')
-			bot.SendTo(contact, '-报告 用于查看已生成的偷鸡报告')
-			bot.SendTo(contact, '-hello 调戏机器人')
+			outData = '目前支持的指令有: \n-报告 用于查看已生成的偷鸡报告\n-hello 调戏机器人\n'
+			outData = outData + '-版本 显示当前偷鸡雷达版本及功能'
+			bot.SendTo(contact, outData)
 	time.sleep(3)
 
 

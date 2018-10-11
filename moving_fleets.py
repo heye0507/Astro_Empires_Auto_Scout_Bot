@@ -26,8 +26,8 @@ headers = {
 }
 
 params = {
-	"email": "",
-	"pass": "",
+	"email": "2378314127@qq.com",
+	"pass": "12345Abc",
 	"navigator": "Netscape",
 	"hostname": "typhon.astroempires.com",
 	"javascript": "true",
