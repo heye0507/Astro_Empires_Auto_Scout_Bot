@@ -4,13 +4,25 @@ A auto scout and report bot (use Tencent QQ to report) for game Astro Empires
 Designed for game Astro Empires. 
 
 now is beta v0.3, supported Python3
+UPDATES: 10/12/2018
+1. Moved code and reconstruct on moving_fleets_v2.py for aliyun instance
+set: 
+log_path
+email
+pass
+galaxy_num (if needed)
+
+2.updated qqbot:
+now supports:
+-版本
+which prints the current version of moving_fleets_v2.py 
 
 mods: 
 requests, beatifulSoup,qqbot
 
 How to use:
 
-1. open moving_fleets.py
+1. open moving_fleets_v2.py
 change url_base to your server, now set to typhon
 change params email/pass to your account/password, eg: "email":"youraccount@gmail.com" "pass":"yourpassword"
 scout galaxy now set to 20-29, you can change galaxy_num inside main() //poorly designed, will fix in later version
