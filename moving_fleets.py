@@ -29,13 +29,8 @@ headers = {
 }
 
 params = {
-<<<<<<< HEAD
 	"email": "",
 	"pass": "",
-=======
-	"email": "",
-	"pass": "",
->>>>>>> dev
 	"navigator": "Netscape",
 	"hostname": "typhon.astroempires.com",
 	"javascript": "true",
