@@ -17,8 +17,10 @@ pass
 galaxy_num (if needed)
 
 2.updated qqbot:
+
 now supports:
--版本
+
+
 which prints the current version of moving_fleets_v2.py 
 
 mods: 
