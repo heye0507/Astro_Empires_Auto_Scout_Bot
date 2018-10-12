@@ -29,13 +29,8 @@ headers = {
 }
 
 params = {
-<<<<<<< HEAD
 	"email": "",
 	"pass": "",
-=======
-	"email": "",
-	"pass": "",
->>>>>>> dev
 	"navigator": "Netscape",
 	"hostname": "typhon.astroempires.com",
 	"javascript": "true",
@@ -49,66 +44,6 @@ target_params = {
 
 
 
-
-def connect(url):
-	print('----------连接服务器,请稍后---------')
-	session = requests.Session()
-	try:
-		response = session.get(url,headers=headers,timeout=AE_timeout)
-		store_cookies(session)
-	except requests.RequestException as e:
-		print('connect:程序错误,清理未完成文件')
-		print('debug: ',e)
-		exit(0)
-	#print (response.status_code)
-	#print (response.cookies.get_dict())
-	#print (response.text)
-	time.sleep(2) #wait 2 seconds for next move
-	return session
-
-def login(session,url,data):
-	try:
-		load_cookies(session)
-		response = session.post(url,data=data,headers=headers,timeout=AE_timeout)
-		store_cookies(session)
-	except requests.RequestException as e:
-		print('login:程序错误,清理未完成文件')
-		print('debug: ',e)
-		exit(0)
-	#print (response.status_code)
-	#print (response.cookies)
-	#print (response.text)
-	print('------登陆成功,2秒后自动搜索T20-29偷鸡----\n')
-	time.sleep(2)
-	return session
-
-def getTarget(session,url,data):
-	try:
-		load_cookies(session)
-		response = session.post(url,data=data,headers=headers,timeout=AE_timeout)
-		store_cookies(session)
-	except requests.RequestException as e:
-		print('getTarget:程序错误,清理未完成文件')
-		print('debug: ',e)
-		exit(0)
-	#print (response.status_code)
-	#print (response.cookies)
-	soup = BeautifulSoup(response.content,'html.parser')
-	#print(soup.prettify())
-	tag = soup.find('table',class_='layout listing btnlisting tbllisting1 sorttable')
-	report_enemy(tag)
-	return session
-
-
-
-#------------handle cookies---------
-def store_cookies(session):
-	with open(cookies_path,'wb') as f:
-		pickle.dump(session.cookies,f)
-
-def load_cookies(session):
-	with open(cookies_path,'rb') as f:
-		session.cookies.update(pickle.load(f))
 
 #-----------------handle soup---------------
 def has_td_but_no_keys(tag):
@@ -183,17 +118,39 @@ def report_enemy(soup):
 
 
 
-def main():
+def run():
 	print('开始扫描,请等待')
+	print('----------连接服务器,请稍后---------')
 	time_start = time.time()
-	session = connect(url_base+url_set_language)
-	session = login(session,url_base+url_login,params)
+	session = requests.Session()
+	try:
+		response = session.get(url_base+url_set_language,headers=headers,timeout=AE_timeout)
+	except requests.RequestException as e:
+		print('connect:程序错误,清理未完成文件')
+		print('debug: ',e)
+		exit(0)
+	time.sleep(2)
+	try:
+		response = session.post(url_base+url_login,data=params,headers=headers,timeout=AE_timeout)
+	except requests.RequestException as e:
+		print('login:程序错误,清理未完成文件')
+		print('debug: ',e)
+		exit(0)
+	time.sleep(2)
 	galaxy_num = 29
 	while (galaxy_num<30):
 		target_params['galaxy'] = str(galaxy_num)
 		print('-----正在寻找星系T'+target_params['galaxy']+'-------------')
-		#write_to_file('-----正在寻找星系T'+target_params['galaxy']+'-------------')
-		session = getTarget(session,url_base+url_target,target_params)
+		try:
+			response = session.post(url_base+url_target,data=target_params,headers=headers,timeout=AE_timeout)
+		except requests.RequestException as e:
+			print('getTarget:程序错误,清理未完成文件')
+			print('debug: ',e)
+			exit(0)
+		soup = BeautifulSoup(response.content,'html.parser')
+		#print(soup.prettify())
+		tag = soup.find('table',class_='layout listing btnlisting tbllisting1 sorttable')
+		report_enemy(tag)
 		galaxy_num = galaxy_num + 1
 		wait = random.randint(1,2)
 		if (galaxy_num is not 30):
@@ -207,7 +164,9 @@ def main():
 	write_log('总耗时: '+str(math.floor(time.time()-time_start))+'秒\n')
 	write_log('当前偷鸡被发现的最小规模为: '+str(fleet_size_limit)+'\n')
 
-if __name__ == '__main__':
+
+
+def main():
 	timeout = 5
 	while True:
 		try:
@@ -217,7 +176,7 @@ if __name__ == '__main__':
 			if (os.path.isfile(log_path)):
 				print ('清理上次记录文件')
 				os.remove(log_path)
-			main()
+			run()
 			next_search_time = time.asctime(time.localtime(time.time()+300))
 			print ('下次搜索将在5分钟后进行,尝试次数设为5')
 			write_log('下次搜索时间为: '+next_search_time+'\n')
@@ -249,8 +208,10 @@ if __name__ == '__main__':
 				time.sleep(searching_period)
 			pass'''
 
+if __name__ == '__main__':
+	main()
 
 
 
 
-	
+
