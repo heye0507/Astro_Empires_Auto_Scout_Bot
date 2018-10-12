@@ -20,6 +20,7 @@ galaxy_num (if needed)
 
 now supports:
 
+-帮助
 
 which prints the current version of moving_fleets_v2.py 
 
