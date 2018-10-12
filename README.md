@@ -6,10 +6,14 @@ Designed for game Astro Empires.
 now is beta v0.3, supported Python3
 UPDATES: 10/12/2018
 1. Moved code and reconstruct on moving_fleets_v2.py for aliyun instance
+
 set: 
 log_path
+
 email
+
 pass
+
 galaxy_num (if needed)
 
 2.updated qqbot:
