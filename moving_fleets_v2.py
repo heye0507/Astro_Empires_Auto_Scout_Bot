@@ -20,7 +20,7 @@ fleet_size_limit = 1000
 searching_period = 300 #search ninja every 3 mins
 AE_timeout = 10 #AE server is bad... (to wait more time for server responses)
 log_path = '/Users/haohe/Python/spider/aeGame/moving_fleets_report.txt'
-cookies_path = '/Users/haohe/Python/spider/aeGame/cookies.txt'
+
 
 headers = {
 	"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
@@ -191,7 +191,7 @@ def main():
 			print ('check type error')
 			print (e)
 			break
-		'''except:
+		except:
 			timeout = timeout - 1
 			if (timeout is not 0):
 				print("不负责任猜测发生错误的原因是超时,10秒后重启下一轮链接")
@@ -206,7 +206,7 @@ def main():
 				write_log('done\n')
 				timeout = 5
 				time.sleep(searching_period)
-			pass'''
+			pass
 
 if __name__ == '__main__':
 	main()
