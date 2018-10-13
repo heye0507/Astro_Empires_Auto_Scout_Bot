@@ -7,6 +7,7 @@ import re
 import random
 import math
 import os
+import pickle
 from bs4 import BeautifulSoup
 
 
@@ -19,6 +20,7 @@ fleet_size_limit = 1000
 searching_period = 300 #search ninja every 3 mins
 AE_timeout = 10 #AE server is bad... (to wait more time for server responses)
 log_path = '/root/aeBot/moving_fleets_report.txt'
+cookies_path = '/root/aeBot/cookies.txt'
 
 headers = {
 	"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
@@ -47,6 +49,7 @@ def connect(url):
 	session = requests.Session()
 	try:
 		response = session.get(url,headers=headers,timeout=AE_timeout)
+		store_cookies(session)	
 	except requests.RequestException as e:
 		print('connect:程序错误,清理未完成文件')
 		print('debug: ',e)
@@ -59,7 +62,9 @@ def connect(url):
 
 def login(session,url,data):
 	try:
+		load_cookies(session)
 		response = session.post(url,data=data,headers=headers,timeout=AE_timeout)
+		store_cookies(session)
 	except requests.RequestException as e:
 		print('login:程序错误,清理未完成文件')
 		print('debug: ',e)
@@ -73,18 +78,32 @@ def login(session,url,data):
 
 def getTarget(session,url,data):
 	try:
+		load_cookies(session)
+		#response = session.post(url_base+url_login,data=params,timeout=AE_timeout)
 		response = session.post(url,data=data,headers=headers,timeout=AE_timeout)
+		store_cookies(session)
 	except requests.RequestException as e:
 		print('getTarget:程序错误,清理未完成文件')
 		print('debug: ',e)
 		exit(0)
-	#print (response.status_code)
+	print ('in get target',response.status_code)
 	#print (response.cookies)
+	#print(response.content)
 	soup = BeautifulSoup(response.content,'html.parser')
-	tag = soup.find('table',class_='layout listing btnlisting tbllisting1 sorttable')
+	print(soup.prettify())
+	tag = soup.find('table',attrs={'class':'layout listing btnlisting tbllisting1 sorttable'})
+	print(tag)
 	report_enemy(tag)
 	return session
 
+#-----------------handle cookies-----------
+def store_cookies(session):
+	with open(cookies_path,'wb') as f:
+		pickle.dump(session.cookies,f)
+
+def load_cookies(session):
+	with open(cookies_path,'rb') as f:
+		session.cookies.update(pickle.load(f))
 
 #-----------------handle soup---------------
 def has_td_but_no_keys(tag):
@@ -208,7 +227,7 @@ if __name__ == '__main__':
 			print ('check type error')
 			print (e)
 			break
-		except:
+		'''except:
 			timeout = timeout - 1
 			if (timeout is not 0):
 				print("不负责任猜测发生错误的原因是超时,10秒后重启下一轮链接")
@@ -223,7 +242,7 @@ if __name__ == '__main__':
 				write_log('done\n')
 				timeout = 5
 				time.sleep(searching_period)
-			pass
+			pass'''
 
 
 

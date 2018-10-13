@@ -7,7 +7,7 @@ import re
 import random
 import math
 import os
-import pickle
+#import pickle
 from bs4 import BeautifulSoup
 
 
@@ -19,8 +19,8 @@ url_target = 'report.aspx?view=galaxy'
 fleet_size_limit = 1000
 searching_period = 300 #search ninja every 3 mins
 AE_timeout = 10 #AE server is bad... (to wait more time for server responses)
-log_path = '/Users/haohe/Python/spider/aeGame/moving_fleets_report.txt'
-cookies_path = '/Users/haohe/Python/spider/aeGame/cookies.txt'
+log_path = '/root/aeBot/moving_fleets_report.txt'
+#cookies_path = '/Users/haohe/Python/spider/aeGame/cookies.txt'
 
 headers = {
 	"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
@@ -29,7 +29,7 @@ headers = {
 }
 
 params = {
-	"email": "65685977@qq.com",
+	"email": "2378314127@qq.com",
 	"pass": "12345Abc",
 	"navigator": "Netscape",
 	"hostname": "typhon.astroempires.com",
@@ -137,7 +137,7 @@ def run():
 		print('debug: ',e)
 		exit(0)
 	time.sleep(2)
-	galaxy_num = 29
+	galaxy_num = 20
 	while (galaxy_num<30):
 		target_params['galaxy'] = str(galaxy_num)
 		print('-----正在寻找星系T'+target_params['galaxy']+'-------------')
@@ -191,7 +191,7 @@ def main():
 			print ('check type error')
 			print (e)
 			break
-		'''except:
+		except:
 			timeout = timeout - 1
 			if (timeout is not 0):
 				print("不负责任猜测发生错误的原因是超时,10秒后重启下一轮链接")
@@ -206,7 +206,7 @@ def main():
 				write_log('done\n')
 				timeout = 5
 				time.sleep(searching_period)
-			pass'''
+			pass
 
 if __name__ == '__main__':
 	main()
