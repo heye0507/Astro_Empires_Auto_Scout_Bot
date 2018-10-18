@@ -19,8 +19,13 @@ url_target = 'report.aspx?view=galaxy'
 fleet_size_limit = 1000
 searching_period = 300 #search ninja every 3 mins
 AE_timeout = 10 #AE server is bad... (to wait more time for server responses)
+<<<<<<< HEAD
 log_path = '/root/aeBot/moving_fleets_report.txt'
 cookies_path = '/root/aeBot/cookies.txt'
+=======
+log_path = '/Users/haohe/Python/spider/aeGame/moving_fleets_report.txt'
+cookies_path = '/Users/haohe/Python/spider/aeGame/cookies.txt'
+>>>>>>> f759182806e26022a87d65fb736c4767b100875a
 
 headers = {
 	"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
@@ -29,8 +34,8 @@ headers = {
 }
 
 params = {
-	"email": "2378314127@gmail.com",
-	"pass": "12345Abc",
+	"email": "",
+	"pass": "",
 	"navigator": "Netscape",
 	"hostname": "typhon.astroempires.com",
 	"javascript": "true",
@@ -44,12 +49,17 @@ target_params = {
 
 
 
+
 def connect(url):
 	print('----------连接服务器,请稍后---------')
 	session = requests.Session()
 	try:
 		response = session.get(url,headers=headers,timeout=AE_timeout)
+<<<<<<< HEAD
 		store_cookies(session)	
+=======
+		store_cookies(session)
+>>>>>>> f759182806e26022a87d65fb736c4767b100875a
 	except requests.RequestException as e:
 		print('connect:程序错误,清理未完成文件')
 		print('debug: ',e)
@@ -79,7 +89,10 @@ def login(session,url,data):
 def getTarget(session,url,data):
 	try:
 		load_cookies(session)
+<<<<<<< HEAD
 		#response = session.post(url_base+url_login,data=params,timeout=AE_timeout)
+=======
+>>>>>>> f759182806e26022a87d65fb736c4767b100875a
 		response = session.post(url,data=data,headers=headers,timeout=AE_timeout)
 		store_cookies(session)
 	except requests.RequestException as e:
@@ -90,13 +103,28 @@ def getTarget(session,url,data):
 	#print (response.cookies)
 	#print(response.content)
 	soup = BeautifulSoup(response.content,'html.parser')
+<<<<<<< HEAD
 	print(soup.prettify())
 	tag = soup.find('table',attrs={'class':'layout listing btnlisting tbllisting1 sorttable'})
 	print(tag)
+=======
+	#print(soup.prettify())
+	tag = soup.find('table',class_='layout listing btnlisting tbllisting1 sorttable')
+>>>>>>> f759182806e26022a87d65fb736c4767b100875a
 	report_enemy(tag)
 	return session
 
 #-----------------handle cookies-----------
+def store_cookies(session):
+	with open(cookies_path,'wb') as f:
+		pickle.dump(session.cookies,f)
+
+def load_cookies(session):
+	with open(cookies_path,'rb') as f:
+		session.cookies.update(pickle.load(f))
+
+
+#------------handle cookies---------
 def store_cookies(session):
 	with open(cookies_path,'wb') as f:
 		pickle.dump(session.cookies,f)
@@ -183,7 +211,7 @@ def main():
 	time_start = time.time()
 	session = connect(url_base+url_set_language)
 	session = login(session,url_base+url_login,params)
-	galaxy_num = 20
+	galaxy_num = 29
 	while (galaxy_num<30):
 		target_params['galaxy'] = str(galaxy_num)
 		print('-----正在寻找星系T'+target_params['galaxy']+'-------------')

@@ -29,8 +29,13 @@ headers = {
 }
 
 params = {
+<<<<<<< HEAD
 	"email": "2378314127@qq.com",
 	"pass": "12345Abc",
+=======
+	"email": "",
+	"pass": "",
+>>>>>>> f759182806e26022a87d65fb736c4767b100875a
 	"navigator": "Netscape",
 	"hostname": "typhon.astroempires.com",
 	"javascript": "true",

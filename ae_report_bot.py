@@ -20,7 +20,7 @@ def prepareData():
 			result = 'result is not ready, please wait...'
 	return result
 
-@qqbotsched(hour='0-23',minute='0-54/6')
+@qqbotsched(hour='0-23',minute='0-59/10')
 def autoReport(bot):
 	group = bot.List('group','Astro Empire T服群')[0]
 	if (group is None):
@@ -33,7 +33,7 @@ def autoReport(bot):
 			print('nothing to report...')
 			pass
 		else:
-			bot.SendTo(group,'自动汇报程序启动:\n'+report)
+			bot.SendTo(group,'警告: 发现偷鸡部队, 请使用 -报告 查看')
 
 def onQQMessage(bot,contact,member,content):
 	if bot.isMe(contact,member):
@@ -51,13 +51,13 @@ def onQQMessage(bot,contact,member,content):
 		elif '@ME' in content:
 			outData = member.name+', 明天就去你家偷鸡'
 			bot.SendTo(contact,outData)
-		elif content == '--stop':
+		elif content == '-stop-':
 			bot.SendTo(contact,'emergency shuting down....please check...')
 			bot.Stop()
 		elif content == '-版本':
 			outData = '当前版本为 偷鸡雷达v0.3测试版\n1. 每隔5分钟自动搜索T2x星系的偷鸡舰队\n'
 			outData = outData + '2. 可在qq群通过偷鸡机器人查看相关报告\n'
-			outData = outData + '3. 每6分钟检查一次是否有偷鸡舰队，自动触发报警\n'
+			outData = outData + '3. 每10分钟检查一次是否有偷鸡舰队，自动触发报警\n'
 			bot.SendTo(contact,outData)
 		elif content == '-帮助':
 			outData = '目前支持的指令有: \n-报告 用于查看已生成的偷鸡报告\n-hello 调戏机器人\n'
