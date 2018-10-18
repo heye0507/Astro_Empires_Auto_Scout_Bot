@@ -1,11 +1,12 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys
+#import sys
 #sys.path.append(r'/Users/haohe/Python/spider/aeGame/')
 import os
 import time
 import re
+import random
 from qqbot import qqbotsched
 
 #2378314127
@@ -33,7 +34,13 @@ def autoReport(bot):
 			print('nothing to report...')
 			pass
 		else:
-			bot.SendTo(group,'警告: 发现偷鸡部队, 请使用 -报告 查看')
+			rand_num = random.randint(1,3)
+			if (rand_num==1):
+				bot.SendTo(group,'天眼通告: 客人来了, 请使用 -报告 翻牌子')
+			elif (rand_num==2):
+				bot.SendTo(group,'Leo大喊一声: 从来只有我吃人,居然有人来吃我，请使用 -报告 查看谁来吃Leo')
+			else:
+				bot.SendTo(group,'一大波僵尸来袭，勇士快来响应雅典娜的召唤，请使用 -报告 查看任务')
 
 def onQQMessage(bot,contact,member,content):
 	if bot.isMe(contact,member):
@@ -48,8 +55,24 @@ def onQQMessage(bot,contact,member,content):
 				#os.remove('/Users/haohe/Desktop/moving_fleets_report.txt')
 		elif content == '-hello':
 			bot.SendTo(contact,'我是谁,我在哪,我要干嘛...')
+		elif content == '-roll':
+			roll_num = random.randint(1,100)
+			if (member.name == 'dreamdragon T23'):
+				roll_num = 100
+			if (roll_num < 20):
+				outData = '烂人品一号登场, 偷鸡都去找你了,你的点数是: '+str(roll_num)
+			elif (roll_num >= 20 and roll_num <60):
+				outData = '朋友，去洗把脸吧，套套飞都比你强,你的点数是: '+str(roll_num)
+			elif (roll_num >=60 and roll_num <90):
+				outData = '快去偷鸡吧,这么好的运气没人抓得到你,你的点数是: '+str(roll_num)
+			else:
+				outData = '天选之人, 请联系管理，下次门站你的渣自动增加: '+str(roll_num*100)
+			bot.SendTo(contact,outData)
 		elif '@ME' in content:
-			outData = member.name+', 明天就去你家偷鸡'
+			if (random.randint(1,2)==1):
+				outData = member.name+', 明天就去你家偷鸡'
+			else:
+				outData = member.name+',我们一起分了套套飞'
 			bot.SendTo(contact,outData)
 		elif content == '-stop-':
 			bot.SendTo(contact,'emergency shuting down....please check...')
