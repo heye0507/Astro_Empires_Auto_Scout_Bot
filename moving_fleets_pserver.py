@@ -6,25 +6,20 @@ import time
 import re
 import random
 import math
-import os,json
+import os
+import pickle
 from bs4 import BeautifulSoup
 
 
 
-url_base = 'http://typhon.astroempires.com/'
+url_base = 'http://pegasus.astroempires.com/'
 url_set_language = '?lang=en'
 url_login = 'login.aspx'
 url_target = 'report.aspx?view=galaxy'
-fleet_size_limit = 1000
-searching_period = 300 #search ninja every 3 mins
+fleet_size_limit = 8000
+searching_period = 900 #search ninja every 15 mins
 AE_timeout = 10 #AE server is bad... (to wait more time for server responses)
-log_path = '/root/aeBot/moving_fleets_report.txt'
-
-config_data = {
-	'galaxyLower': '20',
-	'galaxyUpper': '30'
-}
-
+log_path = '/root/aeBot/Astro_Empires_Auto_Scout_Bot/moving_fleets_report_p.txt'
 
 
 headers = {
@@ -37,34 +32,18 @@ params = {
 	"email": "2378314127@qq.com",
 	"pass": "12345Abc",
 	"navigator": "Netscape",
-	"hostname": "typhon.astroempires.com",
+	"hostname": "pegasus.astroempires.com",
 	"javascript": "true",
 	"post_back": "true"
 }
 
 target_params = {
-	"galaxy": '23',
+	"galaxy": '',
 	"report_type": "moving_fleets"
 }
 
 
-#-----------------handle upload data--------
-def loadConfig():
-	#get path info
-	current_working_dir = os.getcwd()
-	current_working_dir = current_working_dir + '/config.txt'
-	global config_data
-	#check if file exists, if not exists,use default
-	if (not os.path.isfile(current_working_dir)):
-		return 
 
-	with open(current_working_dir,'r') as f:
-		data = json.load(f)
-
-	for key in data:
-		if (data[key]==''):
-			continue
-		config_data[key] = data[key]
 
 #-----------------handle soup---------------
 def has_td_but_no_keys(tag):
@@ -76,7 +55,7 @@ def no_fleets(tag):
 	return False
 
 def friendly_guild(tag):
-	if(re.compile('(MOE|A.V|SR|NATO|RED|Retroben|ASAE)').search(tag.get_text())):
+	if(re.compile('(MOE|ROYAL|Cham|BEST|[-.-])').search(tag.get_text())):
 		return True
 	return False
 
@@ -158,10 +137,8 @@ def run():
 		print('debug: ',e)
 		exit(0)
 	time.sleep(2)
-	loadConfig()
-	print(config_data)
-	galaxy_num = int(config_data['galaxyLower'])
-	while (galaxy_num<int(config_data['galaxyUpper'])):
+	galaxy_num = 00
+	while (galaxy_num<60):
 		target_params['galaxy'] = str(galaxy_num)
 		print('-----正在寻找星系T'+target_params['galaxy']+'-------------')
 		try:
@@ -171,15 +148,16 @@ def run():
 			print('debug: ',e)
 			exit(0)
 		soup = BeautifulSoup(response.content,'html.parser')
+		#print(soup.prettify())
 		tag = soup.find('table',class_='layout listing btnlisting tbllisting1 sorttable')
 		report_enemy(tag)
 		galaxy_num = galaxy_num + 1
-		wait = random.randint(1,2)
-		if (galaxy_num is not int(config_data['galaxyUpper'])):
+		wait = 1
+		if (galaxy_num is not 60):
 			print('----等待'+str(wait)+'秒后查找下一星系--------\n')
 			#write_to_file('----等待'+str(wait)+'秒后查找下一星系--------\n')
 			time.sleep(wait)
-		elif (galaxy_num is int(config_data['galaxyUpper'])):
+		elif (galaxy_num is 60):
 			print('扫描完成')
 	session.close()
 	print('------------关闭连接:完成--------')
@@ -199,7 +177,7 @@ def main():
 				print ('清理上次记录文件')
 				os.remove(log_path)
 			run()
-			next_search_time = time.asctime(time.localtime(time.time()+300))
+			next_search_time = time.asctime(time.localtime(time.time()+900))
 			print ('下次搜索将在5分钟后进行,尝试次数设为5')
 			write_log('下次搜索时间为: '+next_search_time+'\n')
 			write_log('done\n')
@@ -232,8 +210,4 @@ def main():
 
 if __name__ == '__main__':
 	main()
-
-
-
-
 
