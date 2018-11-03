@@ -202,6 +202,8 @@ def main():
 			next_search_time = time.asctime(time.localtime(time.time()+300))
 			print ('下次搜索将在5分钟后进行,尝试次数设为5')
 			write_log('下次搜索时间为: '+next_search_time+'\n')
+			upper =int(config_data['galaxyUpper'])-1
+			write_log('当前搜索范围为 %s - %s 星系\n' %(config_data['galaxyLower'],str(upper)))
 			write_log('done\n')
 			timeout = 5
 			time.sleep(searching_period)
