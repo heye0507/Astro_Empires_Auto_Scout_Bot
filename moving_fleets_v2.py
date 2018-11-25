@@ -7,7 +7,6 @@ import re
 import random
 import math
 import os
-import pickle
 from bs4 import BeautifulSoup
 
 
@@ -20,7 +19,7 @@ fleet_size_limit = 1000
 searching_period = 300 #search ninja every 3 mins
 AE_timeout = 10 #AE server is bad... (to wait more time for server responses)
 log_path = '/Users/haohe/Python/spider/aeGame/moving_fleets_report.txt'
-cookies_path = '/Users/haohe/Python/spider/aeGame/cookies.txt'
+easy_log_path = '/Users/haohe/Python/spider/aeGame/report.txt'
 
 headers = {
 	"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
@@ -28,9 +27,10 @@ headers = {
     "Accept-Language":"en-US,en;q=0.9"
 }
 
+
 params = {
-	"email": "",
-	"pass": "",
+	"email": "65685977@qq.com",
+	"pass": "12345Abc",
 	"navigator": "Netscape",
 	"hostname": "typhon.astroempires.com",
 	"javascript": "true",
@@ -43,6 +43,47 @@ target_params = {
 }
 
 
+def reShowData(result):
+  #line[0] guild
+  #line[1] name ignored
+  #line[-5] location
+  #line[-4] time of arrival
+  #line[-3] size
+  #line[-2] last seen
+  #line[-1] \n
+  location_based_data = {}
+  for line in result:
+    line = line.split(' ')
+    #if(len(line)>6):#remove player that has two string for name
+      #line.pop(2)
+    if (line[0] == 'done\n'):
+      break
+    if (line[0][0] != '['):
+      continue
+    if (line[-5] not in location_based_data):#line[2] is always the location
+      location_based_data[line[-5]] = {line[0]:{'time(hr)':'{:.2f}'.format(float(line[-4])/3600),'size':line[-3]}}
+    else:
+      if (line[0] not in location_based_data[line[-5]]): #another guild in same location
+        location_based_data[line[-5]][line[0]] = {'time(hr)':'{:.2f}'.format(float(line[-4])/3600),'size':line[-3]}
+      else: #same location same guild
+        #compare arrival time, pick small one to save
+        old_time = location_based_data[line[-5]][line[0]]['time(hr)']
+        if (float(old_time)>float(line[-4])/3600):#update time, always use fastest one
+          location_based_data[line[-5]][line[0]]['time(hr)'] = '{:.2f}'.format(float(line[-4])/3600)
+        total_size = int(location_based_data[line[-5]][line[0]]['size'])+int(line[-3])
+        location_based_data[line[-5]][line[0]]['size'] = str(total_size)
+  printLocationData(location_based_data)
+
+
+
+def printLocationData(data):
+  with open(easy_log_path,'a+') as f:
+    for location, location_info in data.items():
+      f.write('\nLocation: %s' %location)
+      for key,guild_info in location_info.items():
+        f.write('Guild: %s' %key)
+        for value in guild_info:
+          f.write(value + ': %s' %guild_info[value])
 
 
 #-----------------handle soup---------------
@@ -137,8 +178,8 @@ def run():
 		print('debug: ',e)
 		exit(0)
 	time.sleep(2)
-	galaxy_num = 29
-	while (galaxy_num<30):
+	galaxy_num = 20
+	while (galaxy_num<24):
 		target_params['galaxy'] = str(galaxy_num)
 		print('-----正在寻找星系T'+target_params['galaxy']+'-------------')
 		try:
@@ -181,6 +222,10 @@ def main():
 			print ('下次搜索将在5分钟后进行,尝试次数设为5')
 			write_log('下次搜索时间为: '+next_search_time+'\n')
 			write_log('done\n')
+			with open(log_path,'r') as f:
+				result = f.readlines()
+				if(result[-1]=='done\n'):
+					reShowData(result)
 			timeout = 5
 			time.sleep(searching_period)
 		except KeyboardInterrupt:
@@ -191,7 +236,7 @@ def main():
 			print ('check type error')
 			print (e)
 			break
-		'''except:
+		except:
 			timeout = timeout - 1
 			if (timeout is not 0):
 				print("不负责任猜测发生错误的原因是超时,10秒后重启下一轮链接")
@@ -206,7 +251,7 @@ def main():
 				write_log('done\n')
 				timeout = 5
 				time.sleep(searching_period)
-			pass'''
+			pass
 
 if __name__ == '__main__':
 	main()
