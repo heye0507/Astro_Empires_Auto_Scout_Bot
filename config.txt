@@ -1,1 +1,1 @@
-{"galaxyUpper": "31", "galaxyLower": "20"}
+{"galaxyLower": "20", "galaxyUpper": "30"}
