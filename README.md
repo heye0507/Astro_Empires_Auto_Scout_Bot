@@ -3,7 +3,41 @@ A auto scout and report bot (use Tencent QQ to report) for game Astro Empires
 
 Designed for game Astro Empires. 
 
-now is beta v0.3, supported Python3
+Updated beta v0.4
+UPDATES: 11/25/2018
+
+moving_fleets_v2.py
+
+ADD: read config file from path, can use config file to set search range
+simply create a file name "config.txt" in the directory with moving_fleets_v2.py
+
+ADD: location based search
+moving_fleets_v2.py will now generate a new report that is location based (simple report)
+Known issues:
+1. Location grouped, it will only show that fastest arrival
+2. If the incoming player doesn't have guild tag, it will be ignored.
+
+But new report gives a simple way when facing massive galaxy invasion, easier for galaxy defending.
+
+ADD: Ninja flag
+Watch for single galaxy, used during single galaxy invasion.
+Set Ninja flag to 0, and target galaxy. 
+default set to 1. (disable)
+
+ae_report_bot.py
+
+ADD: super user list, that can config bot setting 
+
+ADD: -参数 galaxyLower 'num' 
+     -参数 galaxyUpper 'num'
+Super users can use these two settings to config bot search range
+
+ADD: -tsa
+To send location based report (simple report) to qq group for guild based galaxy defending. 
+
+
+
+
 UPDATES: 10/12/2018
 1. Moved code and reconstruct on moving_fleets_v2.py for aliyun instance
 
