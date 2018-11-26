@@ -1,0 +1,1 @@
+{"galaxyLower": "20", "galaxyUpper": "30"}
