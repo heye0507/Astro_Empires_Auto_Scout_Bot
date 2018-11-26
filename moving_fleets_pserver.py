@@ -29,10 +29,10 @@ headers = {
 }
 
 params = {
-	"email": "",
-	"pass": "",
+	"email": "2378314127@qq.com",
+	"pass": "12345Abc",
 	"navigator": "Netscape",
-	"hostname": "typhon.astroempires.com",
+	"hostname": "pegasus.astroempires.com",
 	"javascript": "true",
 	"post_back": "true"
 }
@@ -177,7 +177,7 @@ def main():
 				print ('清理上次记录文件')
 				os.remove(log_path)
 			run()
-			next_search_time = time.asctime(time.localtime(time.time()+300))
+			next_search_time = time.asctime(time.localtime(time.time()+900))
 			print ('下次搜索将在5分钟后进行,尝试次数设为5')
 			write_log('下次搜索时间为: '+next_search_time+'\n')
 			write_log('done\n')
@@ -191,7 +191,7 @@ def main():
 			print ('check type error')
 			print (e)
 			break
-		'''except:
+		except:
 			timeout = timeout - 1
 			if (timeout is not 0):
 				print("不负责任猜测发生错误的原因是超时,10秒后重启下一轮链接")
@@ -206,7 +206,7 @@ def main():
 				write_log('done\n')
 				timeout = 5
 				time.sleep(searching_period)
-			pass'''
+			pass
 
 if __name__ == '__main__':
 	main()

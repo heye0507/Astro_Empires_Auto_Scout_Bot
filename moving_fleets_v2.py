@@ -6,7 +6,7 @@ import time
 import re
 import random
 import math
-import os
+import os,json
 from bs4 import BeautifulSoup
 
 
@@ -20,6 +20,17 @@ searching_period = 300 #search ninja every 3 mins
 AE_timeout = 10 #AE server is bad... (to wait more time for server responses)
 log_path = '/Users/haohe/Python/spider/aeGame/moving_fleets_report.txt'
 easy_log_path = '/Users/haohe/Python/spider/aeGame/report.txt'
+'''
+log_path = '/root/aeBot/moving_fleets_report.txt'
+easy_log_path = '/root/aeBot/report.txt'
+'''
+
+config_data = {
+	'galaxyLower': '20',
+	'galaxyUpper': '30'
+}
+
+
 
 headers = {
 	"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)AppleWebKit 537.36 (KHTML, like Gecko) Chrome",
@@ -43,6 +54,25 @@ target_params = {
 }
 
 
+#-----------------handle upload data--------
+def loadConfig():
+	#get path info
+	current_working_dir = os.getcwd()
+	current_working_dir = current_working_dir + '/config.txt'
+	global config_data
+	#check if file exists, if not exists,use default
+	if (not os.path.isfile(current_working_dir)):
+		return 
+
+	with open(current_working_dir,'r') as f:
+		data = json.load(f)
+	for key in data:
+		if (data[key]==''):
+			continue
+		config_data[key] = data[key]
+
+
+#-----------------handle short report------
 def reShowData(result):
   #line[0] guild
   #line[1] name ignored
@@ -51,40 +81,38 @@ def reShowData(result):
   #line[-3] size
   #line[-2] last seen
   #line[-1] \n
-  location_based_data = {}
-  for line in result:
-    line = line.split(' ')
-    #if(len(line)>6):#remove player that has two string for name
-      #line.pop(2)
-    if (line[0] == 'done\n'):
-      break
-    if (line[0][0] != '['):
-      continue
-    if (line[-5] not in location_based_data):#line[2] is always the location
-      location_based_data[line[-5]] = {line[0]:{'time(hr)':'{:.2f}'.format(float(line[-4])/3600),'size':line[-3]}}
-    else:
-      if (line[0] not in location_based_data[line[-5]]): #another guild in same location
-        location_based_data[line[-5]][line[0]] = {'time(hr)':'{:.2f}'.format(float(line[-4])/3600),'size':line[-3]}
-      else: #same location same guild
-        #compare arrival time, pick small one to save
-        old_time = location_based_data[line[-5]][line[0]]['time(hr)']
-        if (float(old_time)>float(line[-4])/3600):#update time, always use fastest one
-          location_based_data[line[-5]][line[0]]['time(hr)'] = '{:.2f}'.format(float(line[-4])/3600)
-        total_size = int(location_based_data[line[-5]][line[0]]['size'])+int(line[-3])
-        location_based_data[line[-5]][line[0]]['size'] = str(total_size)
-  printLocationData(location_based_data)
-
+	location_based_data = {}
+	for line in result:
+		line = line.split(' ')
+		if (line[0] == 'done\n'):
+			break
+		if (line[0][0] != '['):
+			continue
+		if (line[-5] not in location_based_data):#line[2] is always the location
+			location_based_data[line[-5]] = {line[0]:{'time(hr)':'{:.2f}'.format(float(line[-4])/3600),'size':line[-3]}}
+		else:
+			if (line[0] not in location_based_data[line[-5]]): #another guild in same location
+				location_based_data[line[-5]][line[0]] = {'time(hr)':'{:.2f}'.format(float(line[-4])/3600),'size':line[-3]}
+			else: #same location same guild
+				#compare arrival time, pick small one to save
+				old_time = location_based_data[line[-5]][line[0]]['time(hr)']
+				if (float(old_time)>float(line[-4])/3600):#update time, always use fastest one
+					location_based_data[line[-5]][line[0]]['time(hr)'] = '{:.2f}'.format(float(line[-4])/3600)
+				total_size = int(location_based_data[line[-5]][line[0]]['size'])+int(line[-3])
+				location_based_data[line[-5]][line[0]]['size'] = str(total_size)
+	[(k,location_based_data[k]) for k in sorted(location_based_data.keys())]
+	printLocationData(location_based_data)
 
 
 def printLocationData(data):
-  with open(easy_log_path,'a+') as f:
-    for location, location_info in data.items():
-      f.write('\nLocation: %s' %location)
-      for key,guild_info in location_info.items():
-        f.write('Guild: %s' %key)
-        for value in guild_info:
-          f.write(value + ': %s' %guild_info[value])
-
+	with open(easy_log_path,'a+') as f:
+		for location, location_info in data.items():
+			f.write('\nLocation: %s' %location)
+			for key,guild_info in location_info.items():
+      				f.write('\nGuild: %s\n' %key)
+      				for value in guild_info:
+        				f.write(value + ': %s\n' %guild_info[value])
+		f.write('\ndone\n')
 
 #-----------------handle soup---------------
 def has_td_but_no_keys(tag):
@@ -96,7 +124,7 @@ def no_fleets(tag):
 	return False
 
 def friendly_guild(tag):
-	if(re.compile('(MOE|A.V|SR|NATO|RED)').search(tag.get_text())):
+	if(re.compile('(MOE|D.G|A.V|SR|Royal|RED)').search(tag.get_text())):
 		return True
 	return False
 
@@ -179,7 +207,14 @@ def run():
 		exit(0)
 	time.sleep(2)
 	galaxy_num = 20
-	while (galaxy_num<24):
+	loadConfig()
+	print(config_data)
+	galaxy_num = int(config_data['galaxyLower'])
+	ninja_flag = 1 #single galaxy search flag 
+	while (galaxy_num<int(config_data['galaxyUpper'])):
+		if (ninja_flag == 0):
+			galaxy_num = 39
+			ninja_flag = 1
 		target_params['galaxy'] = str(galaxy_num)
 		print('-----正在寻找星系T'+target_params['galaxy']+'-------------')
 		try:
@@ -189,16 +224,17 @@ def run():
 			print('debug: ',e)
 			exit(0)
 		soup = BeautifulSoup(response.content,'html.parser')
-		#print(soup.prettify())
 		tag = soup.find('table',class_='layout listing btnlisting tbllisting1 sorttable')
 		report_enemy(tag)
+		if (ninja_flag == 1 and galaxy_num == 39):
+			galaxy_num = int(config_data['galaxyLower']) - 1
 		galaxy_num = galaxy_num + 1
 		wait = random.randint(1,2)
-		if (galaxy_num is not 30):
+		if (galaxy_num is not int(config_data['galaxyUpper'])):
 			print('----等待'+str(wait)+'秒后查找下一星系--------\n')
 			#write_to_file('----等待'+str(wait)+'秒后查找下一星系--------\n')
 			time.sleep(wait)
-		elif (galaxy_num is 30):
+		elif (galaxy_num is int(config_data['galaxyUpper'])):
 			print('扫描完成')
 	session.close()
 	print('------------关闭连接:完成--------')
@@ -217,14 +253,19 @@ def main():
 			if (os.path.isfile(log_path)):
 				print ('清理上次记录文件')
 				os.remove(log_path)
+			if (os.path.isfile(easy_log_path)):
+				print('clean last easy log...')
+				os.remove(easy_log_path)
 			run()
 			next_search_time = time.asctime(time.localtime(time.time()+300))
 			print ('下次搜索将在5分钟后进行,尝试次数设为5')
 			write_log('下次搜索时间为: '+next_search_time+'\n')
+			upper =int(config_data['galaxyUpper'])-1
+			write_log('当前搜索范围为 %s - %s 星系\n' %(config_data['galaxyLower'],str(upper)))
 			write_log('done\n')
 			with open(log_path,'r') as f:
 				result = f.readlines()
-				if(result[-1]=='done\n'):
+				if(result[-1] == 'done\n'):
 					reShowData(result)
 			timeout = 5
 			time.sleep(searching_period)
